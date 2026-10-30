@@ -16,20 +16,21 @@ jobs:
     name: "Generate matrix from cabal"
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Extract the tested GHC versions
         id: set-matrix
         uses: kleidukos/get-tested@v0.1.7.0
         with:
           cabal-file: atomic-write.cabal
-          ubuntu-version: latest
+          ubuntu-version: "24.04"
           version: 0.1.7.0
 
   build-and-test:
     name: GHC ${{ matrix.ghc }} on ${{ matrix.os }}
     needs: generate-matrix
     strategy:
+      fail-fast: false
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -39,7 +40,7 @@ jobs:
         uses: haskell-actions/setup@v2
         with:
           ghc-version: ${{ matrix.ghc }}
-          cabal-version: "3.6"
+          cabal-version: latest
       - name: Configure project
         run: cabal configure --enable-tests
       - name: Build project
